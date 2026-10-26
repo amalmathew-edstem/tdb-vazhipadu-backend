@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/orders/*/cancel")
                         .hasRole(StaffAccountConfig.STAFF_ROLE)
+                        .requestMatchers(HttpMethod.GET, "/api/collections/daily")
+                        .hasRole(StaffAccountConfig.STAFF_ROLE)
                         .requestMatchers(HttpMethod.GET, "/api/orders/*")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/offerings", "/api/offerings/*")
