@@ -55,13 +55,17 @@ by Flyway migrations under `src/main/resources/db/migration`.
 | Method | Path                  | Access | Purpose                                                            |
 |--------|-----------------------|--------|--------------------------------------------------------------------|
 | POST   | `/api/auth/login`     | Public | Staff sign-in; returns a bearer token                              |
-| POST   | `/api/offerings`      | Staff  | Add an offering (type, price, active)                              |
+| POST   | `/api/offerings`      | Staff  | Add an offering (type, price, active, optional `dailyLimit`)       |
 | PUT    | `/api/offerings/{id}` | Staff  | Change an offering                                                 |
 | GET    | `/api/offerings/{id}` | Public | Get an offering                                                    |
 | GET    | `/api/offerings`      | Public | List offerings, paged                                              |
 | POST   | `/api/orders`         | Public | Place an order; the server sets the total                          |
 | GET    | `/api/orders`         | Staff  | Search orders by `offeringDate`, `status` and `phoneNumber`, paged |
 | GET    | `/api/orders/{id}`    | Public | Get an order                                                       |
+
+An offering with a `dailyLimit` accepts at most that many bookings per offering date, counted across
+all orders that are not cancelled. An order that would go over the limit is rejected with 422, even
+when many orders arrive at the same moment.
 
 Every error is returned as `application/problem+json` (RFC 9457) with `type`, `title`, `status`,
 `detail` and `instance`; validation errors add an `errors` list of `{field, message}`.

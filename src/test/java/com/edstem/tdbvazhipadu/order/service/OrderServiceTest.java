@@ -3,7 +3,9 @@ package com.edstem.tdbvazhipadu.order.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyIterable;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.edstem.tdbvazhipadu.offering.entity.Offering;
@@ -15,6 +17,7 @@ import com.edstem.tdbvazhipadu.order.dto.OrderResponse;
 import com.edstem.tdbvazhipadu.order.entity.Nakshatra;
 import com.edstem.tdbvazhipadu.order.entity.OrderStatus;
 import com.edstem.tdbvazhipadu.order.entity.VazhipaduOrder;
+import com.edstem.tdbvazhipadu.order.exception.DailyLimitExceededException;
 import com.edstem.tdbvazhipadu.order.exception.InactiveOfferingException;
 import com.edstem.tdbvazhipadu.order.exception.UnknownOfferingException;
 import com.edstem.tdbvazhipadu.order.mapper.OrderMapper;
@@ -88,12 +91,43 @@ class OrderServiceTest {
                 .hasMessageContaining("99");
     }
 
+    @Test
+    void createRejectsOrderThatWouldExceedTheDailyLimit() {
+        Offering pooja = offering(3L, OfferingType.UDAYASTHAMANA_POOJA, "500.00", true, 5);
+        when(offeringRepository.lockDailyLimitedByIdIn(anyCollection())).thenReturn(List.of(pooja));
+        when(offeringRepository.findAllById(anyIterable())).thenReturn(List.of(pooja));
+        when(orderRepository.sumBookedQuantity(eq(3L), any(LocalDate.class), eq(OrderStatus.CANCELLED)))
+                .thenReturn(4L);
+
+        assertThatThrownBy(() -> orderService.create(request(List.of(new OrderItemRequest(3L, 2)))))
+                .isInstanceOf(DailyLimitExceededException.class)
+                .hasMessage("Only 1 UDAYASTHAMANA_POOJA left for 2026-11-02");
+    }
+
+    @Test
+    void createAcceptsOrderThatFillsTheLastPlaceOfTheDailyLimit() {
+        Offering pooja = offering(3L, OfferingType.UDAYASTHAMANA_POOJA, "500.00", true, 5);
+        when(offeringRepository.lockDailyLimitedByIdIn(anyCollection())).thenReturn(List.of(pooja));
+        when(offeringRepository.findAllById(anyIterable())).thenReturn(List.of(pooja));
+        when(orderRepository.sumBookedQuantity(eq(3L), any(LocalDate.class), eq(OrderStatus.CANCELLED)))
+                .thenReturn(4L);
+        when(orderRepository.save(any(VazhipaduOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        OrderResponse response = orderService.create(request(List.of(new OrderItemRequest(3L, 1))));
+
+        assertThat(response.totalAmount()).isEqualByComparingTo("500.00");
+    }
+
     private static CreateOrderRequest request(List<OrderItemRequest> items) {
         return new CreateOrderRequest("Lakshmi", "9876543210", Nakshatra.ROHINI, LocalDate.of(2026, 11, 2), items);
     }
 
     private static Offering offering(Long id, OfferingType type, String price, boolean active) {
-        Offering offering = new Offering(type, new BigDecimal(price), active, null);
+        return offering(id, type, price, active, null);
+    }
+
+    private static Offering offering(Long id, OfferingType type, String price, boolean active, Integer dailyLimit) {
+        Offering offering = new Offering(type, new BigDecimal(price), active, dailyLimit);
         ReflectionTestUtils.setField(offering, "id", id);
         return offering;
     }
