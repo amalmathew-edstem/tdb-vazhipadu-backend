@@ -1,6 +1,7 @@
 package com.edstem.tdbvazhipadu.order.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -17,8 +18,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,6 +36,7 @@ class OrderSearchIntegrationTest {
     @BeforeEach
     void createOffering() throws Exception {
         String response = mockMvc.perform(post("/api/offerings")
+                        .with(staff())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"type\":\"ARCHANA\",\"price\":50.00,\"active\":true}"))
                 .andExpect(status().isCreated())
@@ -49,7 +53,8 @@ class OrderSearchIntegrationTest {
         long second = placeOrder("9000000001", date);
         placeOrder("9000000002", date);
 
-        String response = mockMvc.perform(get("/api/orders").param("phoneNumber", "9000000001"))
+        String response = mockMvc.perform(
+                        get("/api/orders").param("phoneNumber", "9000000001").with(staff()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements").value(2))
                 .andReturn()
@@ -89,32 +94,40 @@ class OrderSearchIntegrationTest {
         long onDate = placeOrder("9000000004", date);
         placeOrder("9000000004", date.plusDays(1));
 
-        String byDate = mockMvc.perform(
-                        get("/api/orders").param("phoneNumber", "9000000004").param("offeringDate", date.toString()))
+        String byDate = mockMvc.perform(get("/api/orders")
+                        .param("phoneNumber", "9000000004")
+                        .param("offeringDate", date.toString())
+                        .with(staff()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
         assertThat(idsOf(byDate)).containsExactly(onDate);
 
-        mockMvc.perform(get("/api/orders").param("phoneNumber", "9000000004").param("status", "BOOKED"))
+        mockMvc.perform(get("/api/orders")
+                        .param("phoneNumber", "9000000004")
+                        .param("status", "BOOKED")
+                        .with(staff()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements").value(2));
-        mockMvc.perform(get("/api/orders").param("phoneNumber", "9000000004").param("status", "CANCELLED"))
+        mockMvc.perform(get("/api/orders")
+                        .param("phoneNumber", "9000000004")
+                        .param("status", "CANCELLED")
+                        .with(staff()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.page.totalElements").value(0));
     }
 
     @Test
     void invalidPhoneNumberIsRejected() throws Exception {
-        mockMvc.perform(get("/api/orders").param("phoneNumber", "abc"))
+        mockMvc.perform(get("/api/orders").param("phoneNumber", "abc").with(staff()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[?(@.field == 'phoneNumber')]").exists());
     }
 
     @Test
     void unknownStatusIsRejected() throws Exception {
-        mockMvc.perform(get("/api/orders").param("status", "LOST"))
+        mockMvc.perform(get("/api/orders").param("status", "LOST").with(staff()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[?(@.field == 'status')]").exists());
     }
@@ -123,7 +136,8 @@ class OrderSearchIntegrationTest {
         String response = mockMvc.perform(get("/api/orders")
                         .param("phoneNumber", phoneNumber)
                         .param("page", String.valueOf(page))
-                        .param("size", "2"))
+                        .param("size", "2")
+                        .with(staff()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -148,5 +162,9 @@ class OrderSearchIntegrationTest {
     private static List<Long> idsOf(String response) {
         List<Number> ids = JsonPath.read(response, "$.content[*].id");
         return ids.stream().map(Number::longValue).toList();
+    }
+
+    private static RequestPostProcessor staff() {
+        return jwt().authorities(new SimpleGrantedAuthority("ROLE_STAFF"));
     }
 }
