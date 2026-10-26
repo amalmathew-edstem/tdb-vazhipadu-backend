@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: tdb-vazhipadu-backend
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
