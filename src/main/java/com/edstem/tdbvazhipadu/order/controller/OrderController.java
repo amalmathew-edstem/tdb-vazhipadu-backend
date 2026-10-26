@@ -2,9 +2,13 @@ package com.edstem.tdbvazhipadu.order.controller;
 
 import com.edstem.tdbvazhipadu.order.dto.CreateOrderRequest;
 import com.edstem.tdbvazhipadu.order.dto.OrderResponse;
+import com.edstem.tdbvazhipadu.order.dto.OrderSearchCriteria;
+import com.edstem.tdbvazhipadu.order.dto.OrderSummaryResponse;
 import com.edstem.tdbvazhipadu.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +29,11 @@ public class OrderController {
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponse create(@Valid @RequestBody CreateOrderRequest request) {
         return orderService.create(request);
+    }
+
+    @GetMapping
+    public Page<OrderSummaryResponse> search(@Valid OrderSearchCriteria criteria, Pageable pageable) {
+        return orderService.search(criteria, pageable);
     }
 
     @GetMapping("/{id}")

@@ -2,6 +2,7 @@ package com.edstem.tdbvazhipadu.order.mapper;
 
 import com.edstem.tdbvazhipadu.order.dto.OrderItemResponse;
 import com.edstem.tdbvazhipadu.order.dto.OrderResponse;
+import com.edstem.tdbvazhipadu.order.dto.OrderSummaryResponse;
 import com.edstem.tdbvazhipadu.order.entity.OrderItem;
 import com.edstem.tdbvazhipadu.order.entity.VazhipaduOrder;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,22 @@ public class OrderMapper {
                 order.getPhoneNumber(),
                 order.getNakshatra(),
                 order.getOfferingDate(),
+                order.getStatus(),
                 order.getTotalAmount(),
                 order.getCreatedAt(),
                 order.getItems().stream().map(this::toItemResponse).toList());
+    }
+
+    public OrderSummaryResponse toSummary(VazhipaduOrder order) {
+        return new OrderSummaryResponse(
+                order.getId(),
+                order.getDevoteeName(),
+                order.getPhoneNumber(),
+                order.getNakshatra(),
+                order.getOfferingDate(),
+                order.getStatus(),
+                order.getTotalAmount(),
+                order.getCreatedAt());
     }
 
     private OrderItemResponse toItemResponse(OrderItem item) {

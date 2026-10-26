@@ -36,6 +36,7 @@ by Flyway migrations under `src/main/resources/db/migration`.
 | GET    | `/api/offerings/{id}`  | Get an offering                           |
 | GET    | `/api/offerings`       | List offerings, paged                     |
 | POST   | `/api/orders`          | Place an order; the server sets the total |
+| GET    | `/api/orders`          | Search orders by `offeringDate`, `status` and `phoneNumber`, paged |
 | GET    | `/api/orders/{id}`     | Get an order                              |
 
 Every error is returned as `application/problem+json` (RFC 9457) with `type`, `title`, `status`,
