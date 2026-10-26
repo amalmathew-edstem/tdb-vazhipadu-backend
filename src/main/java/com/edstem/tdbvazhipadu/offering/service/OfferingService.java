@@ -21,14 +21,14 @@ public class OfferingService {
 
     @Transactional
     public OfferingResponse create(OfferingRequest request) {
-        Offering offering = new Offering(request.type(), request.price(), request.active());
+        Offering offering = new Offering(request.type(), request.price(), request.active(), request.dailyLimit());
         return offeringMapper.toResponse(offeringRepository.save(offering));
     }
 
     @Transactional
     public OfferingResponse update(Long id, OfferingRequest request) {
         Offering offering = findOffering(id);
-        offering.revise(request.type(), request.price(), request.active());
+        offering.revise(request.type(), request.price(), request.active(), request.dailyLimit());
         return offeringMapper.toResponse(offering);
     }
 

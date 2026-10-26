@@ -8,13 +8,17 @@ import com.edstem.tdbvazhipadu.order.dto.OrderItemRequest;
 import com.edstem.tdbvazhipadu.order.dto.OrderResponse;
 import com.edstem.tdbvazhipadu.order.dto.OrderSearchCriteria;
 import com.edstem.tdbvazhipadu.order.dto.OrderSummaryResponse;
+import com.edstem.tdbvazhipadu.order.entity.OrderStatus;
 import com.edstem.tdbvazhipadu.order.entity.VazhipaduOrder;
+import com.edstem.tdbvazhipadu.order.exception.DailyLimitExceededException;
 import com.edstem.tdbvazhipadu.order.exception.InactiveOfferingException;
 import com.edstem.tdbvazhipadu.order.exception.UnknownOfferingException;
 import com.edstem.tdbvazhipadu.order.mapper.OrderMapper;
 import com.edstem.tdbvazhipadu.order.repository.OrderRepository;
 import com.edstem.tdbvazhipadu.order.repository.OrderSpecifications;
 import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -40,7 +44,10 @@ public class OrderService {
 
     @Transactional
     public OrderResponse create(CreateOrderRequest request) {
-        Map<Long, Offering> offeringsById = findOfferings(request);
+        Map<Long, Integer> requestedQuantities = request.items().stream()
+                .collect(Collectors.toMap(OrderItemRequest::offeringId, OrderItemRequest::quantity, Integer::sum));
+        List<Offering> dailyLimited = offeringRepository.lockDailyLimitedByIdIn(requestedQuantities.keySet());
+        Map<Long, Offering> offeringsById = findOfferings(requestedQuantities.keySet());
         VazhipaduOrder order = new VazhipaduOrder(
                 request.devoteeName(),
                 request.phoneNumber(),
@@ -49,6 +56,9 @@ public class OrderService {
                 clock.instant());
         for (OrderItemRequest item : request.items()) {
             order.addItem(orderableOffering(offeringsById, item.offeringId()), item.quantity());
+        }
+        for (Offering offering : dailyLimited) {
+            enforceDailyLimit(offering, request.offeringDate(), requestedQuantities.get(offering.getId()));
         }
         return orderMapper.toResponse(orderRepository.save(order));
     }
@@ -69,9 +79,15 @@ public class OrderService {
                 .map(orderMapper::toSummary);
     }
 
-    private Map<Long, Offering> findOfferings(CreateOrderRequest request) {
-        Set<Long> offeringIds =
-                request.items().stream().map(OrderItemRequest::offeringId).collect(Collectors.toSet());
+    private void enforceDailyLimit(Offering offering, LocalDate offeringDate, int requestedQuantity) {
+        long booked = orderRepository.sumBookedQuantity(offering.getId(), offeringDate, OrderStatus.CANCELLED);
+        long remaining = offering.getDailyLimit() - booked;
+        if (requestedQuantity > remaining) {
+            throw new DailyLimitExceededException(offering.getType(), offeringDate, Math.max(remaining, 0));
+        }
+    }
+
+    private Map<Long, Offering> findOfferings(Set<Long> offeringIds) {
         return offeringRepository.findAllById(offeringIds).stream()
                 .collect(Collectors.toMap(Offering::getId, Function.identity()));
     }
