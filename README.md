@@ -31,7 +31,7 @@ by Flyway migrations under `src/main/resources/db/migration`.
 
 | Method | Path                   | Purpose                                   |
 |--------|------------------------|-------------------------------------------|
-| POST   | `/api/offerings`       | Add an offering (name, price, active)     |
+| POST   | `/api/offerings`       | Add an offering (type, price, active)     |
 | PUT    | `/api/offerings/{id}`  | Change an offering                        |
 | GET    | `/api/offerings/{id}`  | Get an offering                           |
 | GET    | `/api/offerings`       | List offerings, paged                     |

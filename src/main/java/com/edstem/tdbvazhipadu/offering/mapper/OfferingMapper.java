@@ -8,6 +8,6 @@ import org.springframework.stereotype.Component;
 public class OfferingMapper {
 
     public OfferingResponse toResponse(Offering offering) {
-        return new OfferingResponse(offering.getId(), offering.getName(), offering.getPrice(), offering.isActive());
+        return new OfferingResponse(offering.getId(), offering.getType(), offering.getPrice(), offering.isActive());
     }
 }

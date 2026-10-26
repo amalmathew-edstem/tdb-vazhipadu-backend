@@ -26,8 +26,8 @@ class OrderApiIntegrationTest {
 
     @Test
     void orderForTwoPushpanjaliAndOneArchanaTotalsOneHundredTen() throws Exception {
-        long pushpanjali = createOffering("Pushpanjali", "30.00", true);
-        long archana = createOffering("Archana", "50.00", true);
+        long pushpanjali = createOffering("PUSHPANJALI", "30.00", true);
+        long archana = createOffering("ARCHANA", "50.00", true);
 
         String created = mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -45,12 +45,13 @@ class OrderApiIntegrationTest {
                 .andExpect(jsonPath("$.devoteeName").value("Lakshmi"))
                 .andExpect(jsonPath("$.nakshatra").value("ROHINI"))
                 .andExpect(jsonPath("$.totalAmount").value(110.0))
-                .andExpect(jsonPath("$.items.length()").value(2));
+                .andExpect(jsonPath("$.items.length()").value(2))
+                .andExpect(jsonPath("$.items[0].offeringType").value("PUSHPANJALI"));
     }
 
     @Test
     void orderForInactiveOfferingIsRejected() throws Exception {
-        long inactive = createOffering("Ganapathi Homam", "100.00", false);
+        long inactive = createOffering("GANAPATHI_HOMAM", "100.00", false);
 
         mockMvc.perform(post("/api/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -58,7 +59,7 @@ class OrderApiIntegrationTest {
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(header().string("Content-Type", PROBLEM_JSON))
                 .andExpect(jsonPath("$.status").value(422))
-                .andExpect(jsonPath("$.detail").value("Offering Ganapathi Homam is not active and cannot be ordered"));
+                .andExpect(jsonPath("$.detail").value("Offering GANAPATHI_HOMAM is not active and cannot be ordered"));
     }
 
     @Test
@@ -84,10 +85,10 @@ class OrderApiIntegrationTest {
                 .andExpect(jsonPath("$.detail").value("Order 999999 was not found"));
     }
 
-    private long createOffering(String name, String price, boolean active) throws Exception {
+    private long createOffering(String type, String price, boolean active) throws Exception {
         String response = mockMvc.perform(post("/api/offerings")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"%s\",\"price\":%s,\"active\":%s}".formatted(name, price, active)))
+                        .content("{\"type\":\"%s\",\"price\":%s,\"active\":%s}".formatted(type, price, active)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()

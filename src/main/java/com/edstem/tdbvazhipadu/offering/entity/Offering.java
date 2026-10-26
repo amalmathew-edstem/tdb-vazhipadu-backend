@@ -2,6 +2,8 @@ package com.edstem.tdbvazhipadu.offering.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,8 +24,9 @@ public class Offering {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "offering_type", nullable = false, length = 30)
+    private OfferingType type;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
@@ -34,14 +37,14 @@ public class Offering {
     @Version
     private Long version;
 
-    public Offering(String name, BigDecimal price, boolean active) {
-        this.name = name;
+    public Offering(OfferingType type, BigDecimal price, boolean active) {
+        this.type = type;
         this.price = price;
         this.active = active;
     }
 
-    public void revise(String name, BigDecimal price, boolean active) {
-        this.name = name;
+    public void revise(OfferingType type, BigDecimal price, boolean active) {
+        this.type = type;
         this.price = price;
         this.active = active;
     }

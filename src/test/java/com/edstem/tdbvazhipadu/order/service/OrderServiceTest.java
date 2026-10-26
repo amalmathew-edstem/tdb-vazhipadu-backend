@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyIterable;
 import static org.mockito.Mockito.when;
 
 import com.edstem.tdbvazhipadu.offering.entity.Offering;
+import com.edstem.tdbvazhipadu.offering.entity.OfferingType;
 import com.edstem.tdbvazhipadu.offering.repository.OfferingRepository;
 import com.edstem.tdbvazhipadu.order.dto.CreateOrderRequest;
 import com.edstem.tdbvazhipadu.order.dto.OrderItemRequest;
@@ -51,8 +52,8 @@ class OrderServiceTest {
 
     @Test
     void createCalculatesTotalFromOfferingPricesAndQuantities() {
-        Offering pushpanjali = offering(1L, "Pushpanjali", "30.00", true);
-        Offering archana = offering(2L, "Archana", "50.00", true);
+        Offering pushpanjali = offering(1L, OfferingType.PUSHPANJALI, "30.00", true);
+        Offering archana = offering(2L, OfferingType.ARCHANA, "50.00", true);
         when(offeringRepository.findAllById(anyIterable())).thenReturn(List.of(pushpanjali, archana));
         when(orderRepository.save(any(VazhipaduOrder.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -68,12 +69,12 @@ class OrderServiceTest {
 
     @Test
     void createRejectsInactiveOffering() {
-        Offering archana = offering(2L, "Archana", "50.00", false);
+        Offering archana = offering(2L, OfferingType.ARCHANA, "50.00", false);
         when(offeringRepository.findAllById(anyIterable())).thenReturn(List.of(archana));
 
         assertThatThrownBy(() -> orderService.create(request(List.of(new OrderItemRequest(2L, 1)))))
                 .isInstanceOf(InactiveOfferingException.class)
-                .hasMessageContaining("Archana");
+                .hasMessageContaining("ARCHANA");
     }
 
     @Test
@@ -89,8 +90,8 @@ class OrderServiceTest {
         return new CreateOrderRequest("Lakshmi", "9876543210", Nakshatra.ROHINI, LocalDate.of(2026, 11, 2), items);
     }
 
-    private static Offering offering(Long id, String name, String price, boolean active) {
-        Offering offering = new Offering(name, new BigDecimal(price), active);
+    private static Offering offering(Long id, OfferingType type, String price, boolean active) {
+        Offering offering = new Offering(type, new BigDecimal(price), active);
         ReflectionTestUtils.setField(offering, "id", id);
         return offering;
     }

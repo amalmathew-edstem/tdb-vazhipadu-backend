@@ -42,7 +42,7 @@ public class OfferingController {
     }
 
     @GetMapping
-    public Page<OfferingResponse> list(@PageableDefault(sort = "name") Pageable pageable) {
+    public Page<OfferingResponse> list(@PageableDefault(sort = "type") Pageable pageable) {
         return offeringService.list(pageable);
     }
 }

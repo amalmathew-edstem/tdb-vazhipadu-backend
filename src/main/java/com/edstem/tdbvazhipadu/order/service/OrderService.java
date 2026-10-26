@@ -65,7 +65,7 @@ public class OrderService {
             throw new UnknownOfferingException(offeringId);
         }
         if (!offering.isActive()) {
-            throw new InactiveOfferingException(offering.getName());
+            throw new InactiveOfferingException(offering.getType());
         }
         return offering;
     }
