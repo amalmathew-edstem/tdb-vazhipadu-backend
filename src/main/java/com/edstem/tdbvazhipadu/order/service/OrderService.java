@@ -63,6 +63,14 @@ public class OrderService {
         return orderMapper.toResponse(orderRepository.save(order));
     }
 
+    @Transactional
+    public OrderResponse cancel(Long id) {
+        VazhipaduOrder order =
+                orderRepository.findWithItemsById(id).orElseThrow(() -> new ResourceNotFoundException("Order", id));
+        order.cancel();
+        return orderMapper.toResponse(order);
+    }
+
     @Transactional(readOnly = true)
     public OrderResponse get(Long id) {
         return orderRepository

@@ -62,10 +62,16 @@ by Flyway migrations under `src/main/resources/db/migration`.
 | POST   | `/api/orders`         | Public | Place an order; the server sets the total                          |
 | GET    | `/api/orders`         | Staff  | Search orders by `offeringDate`, `status` and `phoneNumber`, paged |
 | GET    | `/api/orders/{id}`    | Public | Get an order                                                       |
+| POST   | `/api/orders/{id}/cancel` | Staff | Cancel a booked order; frees its daily-limit places            |
+| GET    | `/api/collections/daily?date=YYYY-MM-DD` | Staff | Daily collection: total and quantity/amount per offering |
 
 An offering with a `dailyLimit` accepts at most that many bookings per offering date, counted across
 all orders that are not cancelled. An order that would go over the limit is rejected with 422, even
 when many orders arrive at the same moment.
+
+The daily collection report covers orders placed on that date in Indian Standard Time
+(00:00 to 24:00 IST), excluding cancelled orders. Amounts are exact to the paisa, and the report
+total is the sum of the per-offering amounts.
 
 Every error is returned as `application/problem+json` (RFC 9457) with `type`, `title`, `status`,
 `detail` and `instance`; validation errors add an `errors` list of `{field, message}`.
