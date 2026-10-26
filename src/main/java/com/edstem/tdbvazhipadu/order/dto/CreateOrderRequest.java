@@ -18,4 +18,4 @@ public record CreateOrderRequest(
                 String phoneNumber,
         @NotNull Nakshatra nakshatra,
         @NotNull @FutureOrPresent LocalDate offeringDate,
-        @NotEmpty List<@Valid @NotNull OrderItemRequest> items) {}
+        @NotEmpty @Size(max = 20) List<@Valid @NotNull OrderItemRequest> items) {}

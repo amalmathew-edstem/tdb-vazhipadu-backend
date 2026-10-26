@@ -8,5 +8,5 @@ import java.math.BigDecimal;
 
 public record OfferingRequest(
         @NotNull OfferingType type,
-        @NotNull @DecimalMin(value = "0.00", inclusive = false) @Digits(integer = 8, fraction = 2) BigDecimal price,
+        @NotNull @DecimalMin(value = "0.00", inclusive = false) @Digits(integer = 6, fraction = 2) BigDecimal price,
         @NotNull Boolean active) {}

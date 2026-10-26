@@ -78,6 +78,19 @@ class OrderApiIntegrationTest {
     }
 
     @Test
+    void quantityAboveLimitIsRejectedBeforeTotalsCanOverflow() throws Exception {
+        long pushpanjali = createOffering("PUSHPANJALI", "999999.99", true);
+
+        mockMvc.perform(post("/api/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(orderJson("[{\"offeringId\":%d,\"quantity\":2000000000}]".formatted(pushpanjali))))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("Content-Type", PROBLEM_JSON))
+                .andExpect(
+                        jsonPath("$.errors[?(@.field == 'items[0].quantity')]").exists());
+    }
+
+    @Test
     void unknownOrderReturnsNotFound() throws Exception {
         mockMvc.perform(get("/api/orders/{id}", 999_999))
                 .andExpect(status().isNotFound())
