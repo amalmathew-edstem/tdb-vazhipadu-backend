@@ -34,19 +34,28 @@ public class Offering {
     @Column(nullable = false)
     private boolean active;
 
+    @Column(name = "daily_limit")
+    private Integer dailyLimit;
+
     @Version
     private Long version;
 
-    public Offering(OfferingType type, BigDecimal price, boolean active) {
+    public Offering(OfferingType type, BigDecimal price, boolean active, Integer dailyLimit) {
         this.type = type;
         this.price = price;
         this.active = active;
+        this.dailyLimit = dailyLimit;
     }
 
-    public void revise(OfferingType type, BigDecimal price, boolean active) {
+    public void revise(OfferingType type, BigDecimal price, boolean active, Integer dailyLimit) {
         this.type = type;
         this.price = price;
         this.active = active;
+        this.dailyLimit = dailyLimit;
+    }
+
+    public boolean hasDailyLimit() {
+        return dailyLimit != null;
     }
 
     @Override

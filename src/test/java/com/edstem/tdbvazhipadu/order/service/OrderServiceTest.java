@@ -93,7 +93,7 @@ class OrderServiceTest {
     }
 
     private static Offering offering(Long id, OfferingType type, String price, boolean active) {
-        Offering offering = new Offering(type, new BigDecimal(price), active);
+        Offering offering = new Offering(type, new BigDecimal(price), active, null);
         ReflectionTestUtils.setField(offering, "id", id);
         return offering;
     }
