@@ -1,5 +1,6 @@
 package com.edstem.tdbvazhipadu.order.controller;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -13,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -102,6 +105,7 @@ class OrderApiIntegrationTest {
 
     private long createOffering(String type, String price, boolean active) throws Exception {
         String response = mockMvc.perform(post("/api/offerings")
+                        .with(staff())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"type\":\"%s\",\"price\":%s,\"active\":%s}".formatted(type, price, active)))
                 .andExpect(status().isCreated())
@@ -114,5 +118,9 @@ class OrderApiIntegrationTest {
     private static String orderJson(String itemsJson) {
         return "{\"devoteeName\":\"Lakshmi\",\"phoneNumber\":\"9876543210\",\"nakshatra\":\"ROHINI\",\"offeringDate\":\"%s\",\"items\":%s}"
                 .formatted(LocalDate.now().plusDays(7), itemsJson);
+    }
+
+    private static RequestPostProcessor staff() {
+        return jwt().authorities(new SimpleGrantedAuthority("ROLE_STAFF"));
     }
 }

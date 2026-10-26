@@ -43,6 +43,10 @@ public class VazhipaduOrder {
     @Column(nullable = false)
     private LocalDate offeringDate;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private OrderStatus status;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
@@ -59,6 +63,7 @@ public class VazhipaduOrder {
         this.nakshatra = nakshatra;
         this.offeringDate = offeringDate;
         this.createdAt = createdAt;
+        this.status = OrderStatus.BOOKED;
     }
 
     public void addItem(Offering offering, int quantity) {

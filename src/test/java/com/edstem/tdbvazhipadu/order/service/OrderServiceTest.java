@@ -13,6 +13,7 @@ import com.edstem.tdbvazhipadu.order.dto.CreateOrderRequest;
 import com.edstem.tdbvazhipadu.order.dto.OrderItemRequest;
 import com.edstem.tdbvazhipadu.order.dto.OrderResponse;
 import com.edstem.tdbvazhipadu.order.entity.Nakshatra;
+import com.edstem.tdbvazhipadu.order.entity.OrderStatus;
 import com.edstem.tdbvazhipadu.order.entity.VazhipaduOrder;
 import com.edstem.tdbvazhipadu.order.exception.InactiveOfferingException;
 import com.edstem.tdbvazhipadu.order.exception.UnknownOfferingException;
@@ -65,6 +66,7 @@ class OrderServiceTest {
                 .extracting(item -> item.lineTotal().toPlainString())
                 .containsExactly("60.00", "50.00");
         assertThat(response.createdAt()).isEqualTo(NOW);
+        assertThat(response.status()).isEqualTo(OrderStatus.BOOKED);
     }
 
     @Test
