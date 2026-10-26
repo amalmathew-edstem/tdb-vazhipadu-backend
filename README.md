@@ -22,6 +22,25 @@ Backend service for booking vazhipadu (temple offerings) under the Travancore De
 
 The service starts on port 8080. Health is reported at `GET /actuator/health`.
 
+## Data
+
+The service uses an in-memory H2 database, so data is reset on every restart. The schema is created
+by Flyway migrations under `src/main/resources/db/migration`.
+
+## API
+
+| Method | Path                   | Purpose                                   |
+|--------|------------------------|-------------------------------------------|
+| POST   | `/api/offerings`       | Add an offering (type, price, active)     |
+| PUT    | `/api/offerings/{id}`  | Change an offering                        |
+| GET    | `/api/offerings/{id}`  | Get an offering                           |
+| GET    | `/api/offerings`       | List offerings, paged                     |
+| POST   | `/api/orders`          | Place an order; the server sets the total |
+| GET    | `/api/orders/{id}`     | Get an order                              |
+
+Every error is returned as `application/problem+json` (RFC 9457) with `type`, `title`, `status`,
+`detail` and `instance`; validation errors add an `errors` list of `{field, message}`.
+
 ## Build and test
 
 ```bash
