@@ -1,6 +1,7 @@
 package com.edstem.tdbvazhipadu.order.entity;
 
 import com.edstem.tdbvazhipadu.offering.entity.Offering;
+import com.edstem.tdbvazhipadu.order.exception.OrderNotCancellableException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,6 +12,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -53,6 +55,9 @@ public class VazhipaduOrder {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Version
+    private Long version;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
@@ -64,6 +69,13 @@ public class VazhipaduOrder {
         this.offeringDate = offeringDate;
         this.createdAt = createdAt;
         this.status = OrderStatus.BOOKED;
+    }
+
+    public void cancel() {
+        if (status != OrderStatus.BOOKED) {
+            throw new OrderNotCancellableException(id, status);
+        }
+        status = OrderStatus.CANCELLED;
     }
 
     public void addItem(Offering offering, int quantity) {

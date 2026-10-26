@@ -3,6 +3,7 @@ package com.edstem.tdbvazhipadu.common.exception;
 import com.edstem.tdbvazhipadu.common.dto.FieldViolation;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(BusinessRuleException.class)
     ProblemDetail handleBusinessRule(BusinessRuleException exception) {
         return problem(HttpStatus.UNPROCESSABLE_CONTENT, "Request cannot be processed", exception.getMessage());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    ProblemDetail handleConcurrentUpdate(OptimisticLockingFailureException exception) {
+        return problem(
+                HttpStatus.CONFLICT, "Conflict", "The record was changed by another request; reload it and try again");
     }
 
     @ExceptionHandler(PropertyReferenceException.class)

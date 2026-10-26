@@ -62,6 +62,7 @@ by Flyway migrations under `src/main/resources/db/migration`.
 | POST   | `/api/orders`         | Public | Place an order; the server sets the total                          |
 | GET    | `/api/orders`         | Staff  | Search orders by `offeringDate`, `status` and `phoneNumber`, paged |
 | GET    | `/api/orders/{id}`    | Public | Get an order                                                       |
+| POST   | `/api/orders/{id}/cancel` | Staff | Cancel a booked order; frees its daily-limit places            |
 
 An offering with a `dailyLimit` accepts at most that many bookings per offering date, counted across
 all orders that are not cancelled. An order that would go over the limit is rejected with 422, even

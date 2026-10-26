@@ -36,6 +36,11 @@ public class OrderController {
         return orderService.search(criteria, pageable);
     }
 
+    @PostMapping("/{id}/cancel")
+    public OrderResponse cancel(@PathVariable Long id) {
+        return orderService.cancel(id);
+    }
+
     @GetMapping("/{id}")
     public OrderResponse get(@PathVariable Long id) {
         return orderService.get(id);
